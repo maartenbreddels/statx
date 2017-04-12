@@ -40,7 +40,8 @@ inline double sum(xt::pyarray<double> &m)
     return std::accumulate(m.begin(), m.end(), 0.0);
 }
 
-inline double bin1d(xt::pytensor<double,1> &grid, xt::pytensor<double,1> &x, double xmin, double xmax)
+
+inline void _count(xt::pytensor<double,1> &grid, xt::pytensor<double,1> &x, double xmin, double xmax)
 {
     py::gil_scoped_release release;
     double scale = 1/(xmax - xmin);
@@ -55,14 +56,15 @@ inline double bin1d(xt::pytensor<double,1> &grid, xt::pytensor<double,1> &x, dou
     }
 }
 
-// Vectorize Examples
 
-inline double scalar_func(double i, double j)
+inline xt::pyarray<double> count(xt::pytensor<double,1> &x, double xmin, double xmax, int shape)
 {
-    return std::sin(i) + std::cos(j);
-}
+    xt::pyarray<double> grid(shape);
+    // here it should do multithreading (simple map-reduce algo)
+    //_count(grid, x, xmin, xmax);
+    return grid;
 
-// Python Module and Docstrings
+}
 
 PYBIND11_PLUGIN(statx)
 {
@@ -82,14 +84,9 @@ PYBIND11_PLUGIN(statx)
            vectorize_example1
     )docu");
 
-    m.def("sum", sum, "sums");
-    m.def("bin1d", bin1d, "bin1d");
-    m.def("example1", example1, "Return the first element of an array, of dimension at least one");
-    m.def("example2", example2, "Return the the specified array plus 2");
-
-    m.def("readme_example1", readme_example1, "Accumulate the sines of all the values of the specified array");
-
-    m.def("vectorize_example1", xt::pyvectorize(scalar_func), "Add the sine and and cosine of the two specified values");
-
+    //def("count", count, "counts values on a regular N-d grid (multithreaded)");
+    m.def("_count", _count, "implementation of count1d, but single threaded, and does not allocate a grid");
+    //m.def("sum", sum, "calculates sum values on a regular N-d grid (multithreaded)");
+    //m.def("_sum", _sum, "implementation of sum , but single threaded, and does not allocate a grid");
     return m.ptr();
 }
