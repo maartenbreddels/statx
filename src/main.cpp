@@ -21,9 +21,10 @@ inline double sum(xt::pyarray<double> &m)
     return std::accumulate(m.begin(), m.end(), 0.0);
 }
 
+
 template<typename E_GRID, typename X_TYPE>
 //inline void _countX(xt::xexpression<E_GRID>& grid_expression, const int i, const xt::pytensor<X_TYPE,1> &x, const double xmin, const double xmax)
-inline void  __attribute__((always_inline)) _countX(E_GRID& grid, const int i, const xt::pytensor<X_TYPE,1> &x, const double& xmin, const double& xmax, const int& shape0)
+inline void   _countX(E_GRID& grid, const int i, const xt::pytensor<X_TYPE,1> &x, const double& xmin, const double& xmax, const int& shape0)
 {
     //E_GRID& grid = grid_expression.derived_cast();
     //const double scale = 1/(xmax - xmin);
@@ -40,7 +41,7 @@ inline void  __attribute__((always_inline)) _countX(E_GRID& grid, const int i, c
 
 template<typename E_GRID, typename X_TYPE, typename...TAIL>
 //inline void _countX(xt::xexpression<E_GRID>& grid_expression, const int i, const xt::pytensor<X_TYPE,1> &x, const double xmin, const double xmax, TAIL... tail)
-Cinline void  __attribute__((always_inline)) _countX(E_GRID& grid, const int i, const xt::pytensor<X_TYPE,1> &x, const double& xmin, const double& xmax, const int& shape0, TAIL... tail)
+inline void  _countX(E_GRID& grid, const int i, const xt::pytensor<X_TYPE,1> &x, const double& xmin, const double& xmax, const int& shape0, TAIL&... tail)
 {
     //E_GRID& grid = grid_expression.derived_cast();
     //const double scale = 1/(xmax - xmin);
@@ -50,7 +51,7 @@ Cinline void  __attribute__((always_inline)) _countX(E_GRID& grid, const int i, 
     const double scaled = (x_value - xmin) * xmax;
     if( (scaled >= 0) & (scaled < 1) ) {
         const int index = (int)(scaled * shape0);
-        auto&& subgrid = xt::view(grid, index);
+        auto subgrid = xt::view(grid, index);
         _countX(subgrid, i, tail...);
     }
 }
@@ -67,8 +68,8 @@ inline void _count2(xt::pytensor<double,2> &grid, const xt::pytensor<double,1> &
     for(int i = 0 ; i < length; i++)
         _countX(grid, i, x, xmin, scalex, shapex, y, ymin, scaley, shapey);
     /*/
-    const int shapex = grid.shape()[0];
-    const int shapey = grid.shape()[1];
+    //const int shapex = grid.shape()[0];
+    //const int shapey = grid.shape()[1];
     for(int i = 0 ; i < length; i++) {
         const double x_value = x[i];
         const double scaledx = (x_value - xmin) * scalex;
@@ -121,8 +122,6 @@ inline void _sum(xt::pytensor<double,1> &grid, xt::pytensor<double,1> &values, x
         }
     }
 }
-
-
 
 PYBIND11_PLUGIN(statx)
 {
